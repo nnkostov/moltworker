@@ -80,28 +80,17 @@ where
 * result.success == true
 
 ===
-delete marker file locally
+delete marker file locally and confirm gone
 %require
 ===
 WORKER_URL=$(cat "$CCTR_FIXTURE_DIR/worker-url.txt")
-./curl-auth -s "$WORKER_URL/debug/cli?cmd=rm+/root/clawd/e2e-marker.txt+%26%26+echo+deleted" | jq .
+# Delete and verify in a single CLI invocation to avoid FUSE overlay races
+./curl-auth -s "$WORKER_URL/debug/cli?cmd=rm+/root/clawd/e2e-marker.txt+%26%26+test+!+-f+/root/clawd/e2e-marker.txt+%26%26+echo+deleted-and-gone" | jq .
 ---
 {{ result: json object }}
 ---
 where
-* result.stdout contains "deleted"
-
-===
-confirm marker file is gone locally
-%require
-===
-WORKER_URL=$(cat "$CCTR_FIXTURE_DIR/worker-url.txt")
-./curl-auth -s "$WORKER_URL/debug/cli?cmd=test+-f+/root/clawd/e2e-marker.txt+%26%26+echo+exists+||+echo+missing" | jq .
----
-{{ result: json object }}
----
-where
-* result.stdout contains "missing"
+* result.stdout contains "deleted-and-gone"
 
 ===
 restart gateway to trigger restore from R2
