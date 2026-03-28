@@ -114,6 +114,8 @@ wait for gateway to restart after restore
 WORKER_URL=$(cat "$CCTR_FIXTURE_DIR/worker-url.txt")
 for i in $(seq 1 30); do
     STATUS=$(./curl-auth -s "$WORKER_URL/api/status" 2>/dev/null || echo "")
+    # Log each poll to stderr for debugging
+    echo "[restart-poll $i] $STATUS" >&2
     OK=$(echo "$STATUS" | jq -r '.ok // false' 2>/dev/null)
     if [ "$OK" = "true" ]; then
         echo "$STATUS" | jq .
